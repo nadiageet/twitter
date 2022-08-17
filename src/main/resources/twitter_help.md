@@ -33,7 +33,8 @@ La premiere methode aura la signature :
 void tweet(String content, Long creatorId);
 ````
 
-Elle s'occupe de sauvegarder un tweet dans le repository avec le contenu en paramètre et le user correspondant au
+Elle s'occupe de sauvegarder un tweet dans le repository avec le contenu
+en paramètre et le user correspondant au
 creatorId
 
 4)
