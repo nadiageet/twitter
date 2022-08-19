@@ -19,10 +19,15 @@ public class TwitterController {
 
     @GetMapping("/tweets")
     public List<Tweet> getAllTweets() {
-        return tweetRepository.getAllTweets();
+        return tweetRepository.getAllActivesTweets();
     }
 
-    @PostMapping("/tweet")
+    @GetMapping("/tweets/user/{userId}")
+    public List<Tweet> gettweetById(@PathVariable("userId") Long userId) {
+        return tweetservice.getTweetsOfUser(userId);
+    }
+
+    @PostMapping("/tweets")
     public void tweet(@RequestBody UserRequest userRequest, TweetRequest tweetRequest) {
         tweetservice.tweet(tweetRequest.getContent(), userRequest.getUserId());
     }
@@ -30,6 +35,19 @@ public class TwitterController {
     @GetMapping("/tweets/{userId}")
     private List<Tweet> getTweetsOfUser(@PathVariable("userId") Long userId) {
         return tweetservice.getTweetsOfUser(userId);
+    }
+
+    @GetMapping("/tweets")
+    public List<Tweet> getFeed(@RequestParam("requesterId") Long requesterId) {
+        return tweetservice.getFeed(requesterId, 0, 10);
+    }
+
+    @PutMapping("tweet/{tweetId}")
+    public void updateTwwet(@PathVariable("tweetId") Long tweetId, @RequestParam("tweetContent") String tweetContent) {
+        Tweet tweet = tweetRepository.getTweetById(tweetId);
+        tweetservice.updateTweet(tweetId, tweetContent);
+
+
     }
 
 }

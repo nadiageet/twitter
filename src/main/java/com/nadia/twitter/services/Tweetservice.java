@@ -6,25 +6,35 @@ import com.nadia.twitter.repository.TweetRepository;
 import com.nadia.twitter.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class Tweetservice {
 
-    private final TweetRepository tweetRepository = new TweetRepository();
-    private final UserRepository userRepository = new UserRepository();
+    private final TweetRepository tweetRepository;
+    private final UserRepository userRepository;
 
-    public void tweet(String content, Long creatorId) {
+    public Tweetservice(TweetRepository tweetRepository, UserRepository userRepository) {
+        this.tweetRepository = tweetRepository;
+        this.userRepository = userRepository;
+    }
 
-        Tweet tweet = tweetRepository.getAllTweets().
-                stream()
-                .filter(tweet1 -> tweet1.getContent().equals(content))
-                .findAny()
-                .orElseThrow(() -> new RuntimeException("aucun tweet avec ce contenu"));
+    public Tweet tweet(String content, Long creatorId) {
 
-        tweet.setCreator(userRepository.getUserById(creatorId));
+        Tweet tweet = new Tweet(content, userRepository.getUserById(creatorId), LocalDateTime.now());
         tweetRepository.save(tweet);
+        return tweet;
+
+    }
+
+    public Tweet creatPrivateTweet(String content, Long creatorId) {
+
+        Tweet tweet = tweet(content, creatorId);
+        tweet.setPrivate(true);
+        return tweet;
 
     }
 
@@ -42,6 +52,12 @@ public class Tweetservice {
         User follower = userRepository.getUserById(followerId);
 
         follower.follow(creator);
+    }
+
+    public void blockfollow(Long creatorId, Long userBlockedId) {
+        User creator = userRepository.getUserById(creatorId);
+        User userBlocked = userRepository.getUserById(userBlockedId);
+        userBlocked.blockFollow(creator);
     }
 
     public List<Tweet> getUserFeed(Long requesterId) {
@@ -67,6 +83,41 @@ public class Tweetservice {
     }
 
     public List<Tweet> getFeed(Long requesterId, Integer page, Integer pageSize) {
-        return null;
+        List<Tweet> tweets = tweetRepository.getAllActivesTweets()
+                .stream()
+                .skip((long) page * pageSize)
+                .limit(pageSize)
+                .collect(Collectors.toList());
+        return tweets;
+
     }
+
+
+    public void updateTweet(Long tweetId, String tweetContent) {
+
+        Tweet tweet = tweetRepository.getTweetById(tweetId);
+        long hoursFromCreation = tweet.getCreatedAt().until(LocalDateTime.now(), ChronoUnit.HOURS);
+        if (hoursFromCreation >= 1) {
+            throw new IllegalArgumentException("the tweet can not be codified");
+        }
+        tweet.setContent(tweetContent);
+        tweet.setUpdatedAt(LocalDateTime.now());
+
+
+    }
+
+    void deleteTweet(Long tweetId, Long requesterId) {
+        Tweet tweet = tweetRepository.getTweetById(tweetId);
+        if (!(tweet.getCreator().equals(userRepository.getUserById(requesterId)))) {
+            throw new IllegalArgumentException("the tweet can not be deleted");
+        }
+        tweet.setDeleted(true);
+    }
+
+    void likeTweet(Long tweetId, Long requesterId) {
+        Tweet tweet = tweetRepository.getTweetById(tweetId);
+        tweet.addLike(requesterId);
+    }
+
+
 }
