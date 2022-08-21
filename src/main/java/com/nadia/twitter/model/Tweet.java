@@ -52,8 +52,10 @@ public class Tweet {
     private boolean isDeleted = false;
 
     private int likes = 0;
+    private int dislikes = 0;
 
     Set<Long> likesByUserIds = new HashSet<>();
+    Set<Long> dislikesByUserIds = new HashSet<>();
 
 
     public void setCreator(User creator) {
@@ -92,12 +94,21 @@ public class Tweet {
         return likesByUserIds.size();
     }
 
-    public void setLikes(int likes) {
-        this.likes = likes;
+    public int getDislikes() {
+        return dislikesByUserIds.size();
     }
 
     public void addLike(Long userId) {
         likesByUserIds.add(userId);
+    }
+
+    public void addDisLike(Long userId) {
+        dislikesByUserIds.add(userId);
+    }
+
+
+    public int getNetLikes() {
+        return likesByUserIds.size() - dislikesByUserIds.size();
     }
 
     @Override
@@ -109,5 +120,6 @@ public class Tweet {
                 ", createdAt=" + createdAt +
                 '}';
     }
+
 
 }

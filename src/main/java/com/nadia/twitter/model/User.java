@@ -12,6 +12,7 @@ public class User {
     private String userName;
     private List<User> followed = new ArrayList<>();
     private List<User> blockedUsers = new ArrayList<>();
+    private boolean isInfluencer = false;
 
 
     public User(Long id, String userName) {
@@ -45,5 +46,13 @@ public class User {
 
     public void blockFollow(User user) {
         blockedUsers.add(user);
+    }
+
+    public boolean isInfluencer() {
+        return isInfluencer;
+    }
+
+    public void setInfluencer(boolean influencer) {
+        isInfluencer = influencer;
     }
 }

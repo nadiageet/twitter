@@ -51,6 +51,13 @@ public class TweetRepository {
                 .collect(Collectors.toList());
     }
 
+    public Tweet getTweetByLike(Long tweetId, Long userLikeId, Long userDisLikeId) {
+        Tweet tweet = getTweetById(tweetId);
+        tweet.addLike(userLikeId);
+        tweet.addDisLike(userDisLikeId);
+        return tweet;
+    }
+
     public void clear() {
         tweets.clear();
     }

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,6 +21,16 @@ public class Tweetservice {
     public Tweetservice(TweetRepository tweetRepository, UserRepository userRepository) {
         this.tweetRepository = tweetRepository;
         this.userRepository = userRepository;
+    }
+
+    private static int sortByInfluencerThenNetLikes(Tweet left, Tweet right) {
+        if (left.getCreator().isInfluencer()) {
+            return -1;
+        }
+        if (right.getCreator().isInfluencer()) {
+            return 1;
+        }
+        return right.getNetLikes() - left.getNetLikes();
     }
 
     public Tweet tweet(String content, Long creatorId) {
@@ -54,10 +65,10 @@ public class Tweetservice {
         follower.follow(creator);
     }
 
-    public void blockfollow(Long creatorId, Long userBlockedId) {
-        User creator = userRepository.getUserById(creatorId);
-        User userBlocked = userRepository.getUserById(userBlockedId);
-        userBlocked.blockFollow(creator);
+    public void blockfollow(Long requester, Long useToBlockId) {
+        User creator = userRepository.getUserById(requester);
+        User userBlocked = userRepository.getUserById(useToBlockId);
+        creator.blockFollow(userBlocked);
     }
 
     public List<Tweet> getUserFeed(Long requesterId) {
@@ -65,8 +76,7 @@ public class Tweetservice {
 
         User user = userRepository.getUserById(requesterId);
         List<Long> followrsId = user.getFollowed().stream()
-                .map(user1 -> user1.getId())
-                .collect(Collectors.toList());
+                .map(user1 -> user1.getId()).toList();
 //
 //        for(Long id : followrsId){
 //            tweetsMap.put(id, getTweetsOfUser(id));
@@ -117,7 +127,40 @@ public class Tweetservice {
     void likeTweet(Long tweetId, Long requesterId) {
         Tweet tweet = tweetRepository.getTweetById(tweetId);
         tweet.addLike(requesterId);
+        if (!tweet.getCreator().isInfluencer()) {
+            userBeInfluencerForLive(tweet);
+        }
+
     }
 
+    private void userBeInfluencerForLive(Tweet tweet) {
+        int sumTweet = tweetRepository.getTweetsByCreatorId(tweet.getCreator().getId())
+                .stream()
+                .mapToInt(Tweet::getLikes)
+                .sum();
+        if (sumTweet >= 100) {
+            tweet.getCreator().setInfluencer(true);
+        }
+    }
+
+    void dislikeTweet(Long tweetId, Long requesterId) {
+        Tweet tweet = tweetRepository.getTweetById(tweetId);
+        tweet.addDisLike(requesterId);
+    }
+
+    List<Tweet> getHottestTweets(Long requesterId) {
+        List<Tweet> tweets = new ArrayList<>();
+        for (Tweet tweet : tweetRepository.getAllActivesTweets()) {
+            long tweetsForLastDay = tweet.getCreatedAt().until(LocalDateTime.now(), ChronoUnit.HOURS);
+            if (tweetsForLastDay <= 24) {
+                userBeInfluencerForLive(tweet);
+                tweets.add(tweet);
+            }
+
+        }
+        return tweets.stream()
+                .sorted(Tweetservice::sortByInfluencerThenNetLikes)
+                .collect(Collectors.toList());
+    }
 
 }

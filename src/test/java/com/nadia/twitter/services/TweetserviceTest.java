@@ -4,8 +4,6 @@ import com.nadia.twitter.model.Tweet;
 import com.nadia.twitter.model.User;
 import com.nadia.twitter.repository.TweetRepository;
 import com.nadia.twitter.repository.UserRepository;
-import org.assertj.core.api.Assertions;
-import org.assertj.core.api.AssertionsForInterfaceTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,7 +13,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 
 class TweetserviceTest {
@@ -65,7 +63,7 @@ class TweetserviceTest {
         List<Tweet> tweetsNadia = tweetservice.getTweetsOfUser(NADIA_ID);
 
         // THEN
-        Assertions.assertThat(tweetsNadia)
+        assertThat(tweetsNadia)
                 .hasSize(3)
                 .containsExactlyInAnyOrder(tweetNadia1, tweetNadia2, tweetNadia3);
 
@@ -83,7 +81,7 @@ class TweetserviceTest {
         tweetservice.follow(SOFIA_ID, NADIA_ID);
 
         List<Tweet> tweets = tweetservice.getUserFeed(NADIA_ID);
-        Assertions.assertThat(tweets)
+        assertThat(tweets)
                 .hasSize(5);
 
     }
@@ -105,7 +103,7 @@ class TweetserviceTest {
 //        [x, x, x, x, x || x, x, x, x, x || x, x, x, x, x || x, x, x, x, x, x, x, x, x, ]
         List<Tweet> tweets = tweetservice.getFeed(NADIA_ID, 1, 5);
         System.out.println("tweets = " + tweets);
-        Assertions.assertThat(tweets)
+        assertThat(tweets)
                 .hasSize(5);
 
     }
@@ -115,25 +113,23 @@ class TweetserviceTest {
 
         String content = "le repas du midi";
         Tweet tweet = tweetservice.creatPrivateTweet(content, NADIA_ID);
-        Assertions.assertThat(tweet.isPrivate())
+        assertThat(tweet.isPrivate())
                 .isTrue();
 
-        Assertions.assertThat(tweet.getContent())
+        assertThat(tweet.getContent())
                 .isEqualTo(content);
 
     }
 
     @Test
-    void follow() {
+    void block() {
 
         long creatorId = 1L;
         User creator = userRepository.getUserById(creatorId);
         long blockedId = 2L;
-        User blocked = userRepository.getUserById(blockedId);
         tweetservice.blockfollow(creatorId, blockedId);
-        assertThat(blocked.getBlockedUsers().size()).isEqualTo(1);
-        AssertionsForInterfaceTypes.assertThat(blocked.getBlockedUsers()).contains(creator);
 
+        assertThat(creator.getBlockedUsers()).hasSize(1);
 
     }
 
@@ -244,5 +240,144 @@ class TweetserviceTest {
         assertThat(tweetRepository.getTweetById(1L).getLikes()).isEqualTo(1);
     }
 
+    @Test
+    void disLikeTweetByCreator() {
+        // GIVEN
+        Tweet tweet = new Tweet(1L, "la météo", nadia, LocalDateTime.now());
+
+        tweetRepository.save(tweet);
+        // WHEN
+        tweetservice.dislikeTweet(tweet.getId(), nadia.getId());
+
+        // THEN
+        assertThat(tweetRepository.getTweetById(1L).getDislikes()).isEqualTo(1);
+    }
+
+    @Test
+    void disLikeTweetByOther() {
+        // GIVEN
+        Tweet tweet = new Tweet(1L, "la météo", nadia, LocalDateTime.now());
+
+        tweetRepository.save(tweet);
+        // WHEN
+        tweetservice.dislikeTweet(tweet.getId(), nadia.getId() + 1);
+
+        // THEN
+        assertThat(tweetRepository.getTweetById(1L).getDislikes()).isEqualTo(1);
+    }
+
+    @Test
+    void disLikeTweetByTwoPeople() {
+        // GIVEN
+        Tweet tweet = new Tweet(1L, "la météo", nadia, LocalDateTime.now());
+
+        tweetRepository.save(tweet);
+        // WHEN
+        tweetservice.dislikeTweet(tweet.getId(), nadia.getId());
+        tweetservice.dislikeTweet(tweet.getId(), nadia.getId() + 1);
+
+        // THEN
+        assertThat(tweetRepository.getTweetById(1L).getDislikes()).isEqualTo(2);
+    }
+
+    @Test
+    void disLikeTweetTwiceBySamePerson() {
+        // GIVEN
+        Tweet tweet = new Tweet(1L, "la météo", nadia, LocalDateTime.now());
+
+        tweetRepository.save(tweet);
+        // WHEN
+        tweetservice.dislikeTweet(tweet.getId(), nadia.getId());
+        tweetservice.dislikeTweet(tweet.getId(), nadia.getId());
+
+        // THEN
+        assertThat(tweetRepository.getTweetById(1L).getDislikes()).isEqualTo(1);
+    }
+
+    @Test
+    void getTweetByLike() {
+        Tweet tweet = new Tweet(1L, "la météo", nadia, LocalDateTime.now());
+
+        tweetRepository.save(tweet);
+        // WHEN
+        tweetservice.likeTweet(tweet.getId(), nadia.getId());
+        tweetservice.dislikeTweet(tweet.getId(), nadia.getId() + 1);
+
+        tweetRepository.getTweetByLike(1L, nadia.getId(), nadia.getId() + 1);
+        assertThat(tweetRepository.getTweetById(1L).getLikes()).isEqualTo(1);
+        assertThat(tweetRepository.getTweetById(1L).getDislikes()).isEqualTo(1);
+    }
+
+    @Test
+    void getHottestTweets() {
+        for (int i = 0; i < 20; i++) {
+            Tweet tweet = new Tweet((long) i, "le repas du soir", soso, LocalDateTime.now());
+            tweetRepository.save(tweet);
+        }
+        tweetservice.likeTweet(1L, NADIA_ID);
+        tweetservice.likeTweet(1L, GUIGUI_ID);
+        tweetservice.likeTweet(1L, SOFIA_ID);
+        tweetservice.dislikeTweet(1L, NADIA_ID);
+
+        tweetservice.likeTweet(2L, NADIA_ID);
+        tweetservice.likeTweet(2L, GUIGUI_ID);
+        tweetservice.dislikeTweet(2L, GUIGUI_ID);
+
+
+        List<Tweet> tweets = tweetservice.getHottestTweets(3L);
+        assertThat(tweets)
+                .hasSize(20)
+                .first().isEqualTo(tweetRepository.getTweetById(1L));
+        assertThat(tweets.get(1))
+                .isEqualTo(tweetRepository.getTweetById(2L));
+
+    }
+
+    @Test
+    void influencer() {
+        Tweet tweet = new Tweet(1L, "le repas du soir", nadia, LocalDateTime.now());
+        tweetRepository.save(tweet);
+
+        for (int i = 1; i <= 110; i++) {
+            User user = new User(NADIA_ID + i, "likeTweet");
+            tweetservice.likeTweet(1L, user.getId());
+        }
+        assertThat(tweet.getLikes()).isEqualTo(110);
+        assertThat(tweet.getCreator()).isEqualTo(nadia);
+        assertThat(userRepository.getUserById(NADIA_ID).isInfluencer())
+                .isTrue();
+    }
+
+    @Test
+    void priorInfluencer() {
+
+        nadia.setInfluencer(true);
+        soso.setInfluencer(true);
+        Tweet tweetNadia = new Tweet(1L, "le repas du soir", nadia, LocalDateTime.now());
+        Tweet tweetSofia = new Tweet(2L, "le repas du soir", soso, LocalDateTime.now());
+        tweetRepository.save(tweetNadia);
+        tweetRepository.save(tweetSofia);
+
+        Tweet tweetGuigui1 = new Tweet(3L, "de guigui", guigui, LocalDateTime.now());
+        Tweet tweetGuigui2 = new Tweet(4L, "de guigui", guigui, LocalDateTime.now());
+        Tweet tweetGuigui3 = new Tweet(5L, "de guigui", guigui, LocalDateTime.now());
+
+        tweetRepository.save(tweetGuigui1);
+        tweetRepository.save(tweetGuigui2);
+        tweetRepository.save(tweetGuigui3);
+        tweetservice.likeTweet(4L, nadia.getId());
+
+        User toto = new User(42L, "toto");
+
+        List<Tweet> feed = tweetservice.getHottestTweets(toto.getId());
+        assertThat(feed).hasSize(5);
+        assertThat(feed).containsExactly(
+                tweetSofia, tweetNadia, tweetGuigui2, tweetGuigui1, tweetGuigui3
+        );
+
+        System.out.println(feed);
+
+
+    }
 
 }
