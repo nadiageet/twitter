@@ -5,7 +5,7 @@ import com.nadia.twitter.model.Tweet;
 import com.nadia.twitter.model.User;
 import com.nadia.twitter.repository.TweetRepository;
 import com.nadia.twitter.repository.UserRepository;
-import com.nadia.twitter.services.Tweetservice;
+import com.nadia.twitter.services.TweetService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,7 +14,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.List;
 
@@ -39,7 +42,7 @@ class TwitterApplicationTests {
     @Autowired
     TweetRepository tweetRepository;
     @Autowired
-    Tweetservice tweetservice;
+    TweetService tweetservice;
 
     @Autowired
     private MockMvc mockMvc;
@@ -50,6 +53,7 @@ class TwitterApplicationTests {
 
     @BeforeEach
     void setUp() {
+        Clock clock = Clock.fixed(Instant.parse("2022-08-01T14:41:00Z"), ZoneId.of("Europe/Paris"));
 
         User nadia = new User(1L, "nadia");
         User guigui = new User(2L, "guigui");
@@ -61,7 +65,7 @@ class TwitterApplicationTests {
         );
         List<Tweet> tweets =
                 Arrays.asList(
-                        new Tweet(1L, "la météo", nadia, LocalDateTime.now()),
+                        new Tweet(1L, "la météo", nadia, LocalDateTime.now(clock)),
                         new Tweet(2L, "les vacances", guigui, LocalDateTime.parse("2022-08-12T10:15:30")),
                         new Tweet(3L, "la rentrée", soso, LocalDateTime.parse("2022-08-15T10:15:30")),
                         new Tweet(4L, "la politique", nadia, LocalDateTime.parse("2022-08-10T10:15:30"))
@@ -141,7 +145,7 @@ class TwitterApplicationTests {
     }
 
     @Test
-    void tweet() {
+    void createTweet() {
 
         Tweet tweet = tweetservice.tweet("tweet test", 1L);
         assertThat(tweet.getCreator().getId()).isEqualTo(1L);

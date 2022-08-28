@@ -8,7 +8,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
@@ -16,13 +19,15 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 
-class TweetserviceTest {
+class TweetServiceTest {
     public static final long NADIA_ID = 1L;
     public static final long GUIGUI_ID = 2L;
     public static final long SOFIA_ID = 3L;
     UserRepository userRepository = new UserRepository();
     TweetRepository tweetRepository = new TweetRepository(userRepository);
-    Tweetservice tweetservice = new Tweetservice(tweetRepository, userRepository);
+
+    Clock clock = Clock.fixed(Instant.parse("2022-08-01T14:41:00Z"), ZoneId.of("Europe/Paris"));
+    TweetService tweetservice = new TweetService(tweetRepository, userRepository, clock);
     private User soso;
     private User nadia;
     private User guigui;

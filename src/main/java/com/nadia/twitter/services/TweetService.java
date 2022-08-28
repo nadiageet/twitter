@@ -6,6 +6,7 @@ import com.nadia.twitter.repository.TweetRepository;
 import com.nadia.twitter.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -13,14 +14,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class Tweetservice {
+public class TweetService {
 
     private final TweetRepository tweetRepository;
     private final UserRepository userRepository;
 
-    public Tweetservice(TweetRepository tweetRepository, UserRepository userRepository) {
+    private final Clock clock;
+
+    public TweetService(TweetRepository tweetRepository, UserRepository userRepository, Clock clock) {
         this.tweetRepository = tweetRepository;
         this.userRepository = userRepository;
+        this.clock = clock;
     }
 
     private static int sortByInfluencerThenNetLikes(Tweet left, Tweet right) {
@@ -34,11 +38,9 @@ public class Tweetservice {
     }
 
     public Tweet tweet(String content, Long creatorId) {
-
-        Tweet tweet = new Tweet(content, userRepository.getUserById(creatorId), LocalDateTime.now());
+        Tweet tweet = new Tweet(content, userRepository.getUserById(creatorId), LocalDateTime.now(clock));
         tweetRepository.save(tweet);
         return tweet;
-
     }
 
     public Tweet creatPrivateTweet(String content, Long creatorId) {
@@ -106,17 +108,17 @@ public class Tweetservice {
     public void updateTweet(Long tweetId, String tweetContent) {
 
         Tweet tweet = tweetRepository.getTweetById(tweetId);
-        long hoursFromCreation = tweet.getCreatedAt().until(LocalDateTime.now(), ChronoUnit.HOURS);
+        long hoursFromCreation = tweet.getCreatedAt().until(LocalDateTime.now(clock), ChronoUnit.HOURS);
         if (hoursFromCreation >= 1) {
             throw new IllegalArgumentException("the tweet can not be codified");
         }
         tweet.setContent(tweetContent);
-        tweet.setUpdatedAt(LocalDateTime.now());
+        tweet.setUpdatedAt(LocalDateTime.now(clock));
 
 
     }
 
-    void deleteTweet(Long tweetId, Long requesterId) {
+    public void deleteTweet(Long tweetId, Long requesterId) {
         Tweet tweet = tweetRepository.getTweetById(tweetId);
         if (!(tweet.getCreator().equals(userRepository.getUserById(requesterId)))) {
             throw new IllegalArgumentException("the tweet can not be deleted");
@@ -124,7 +126,7 @@ public class Tweetservice {
         tweet.setDeleted(true);
     }
 
-    void likeTweet(Long tweetId, Long requesterId) {
+    public void likeTweet(Long tweetId, Long requesterId) {
         Tweet tweet = tweetRepository.getTweetById(tweetId);
         tweet.addLike(requesterId);
         if (!tweet.getCreator().isInfluencer()) {
@@ -143,15 +145,15 @@ public class Tweetservice {
         }
     }
 
-    void dislikeTweet(Long tweetId, Long requesterId) {
+    public void dislikeTweet(Long tweetId, Long requesterId) {
         Tweet tweet = tweetRepository.getTweetById(tweetId);
         tweet.addDisLike(requesterId);
     }
 
-    List<Tweet> getHottestTweets(Long requesterId) {
+    public List<Tweet> getHottestTweets(Long requesterId) {
         List<Tweet> tweets = new ArrayList<>();
         for (Tweet tweet : tweetRepository.getAllActivesTweets()) {
-            long tweetsForLastDay = tweet.getCreatedAt().until(LocalDateTime.now(), ChronoUnit.HOURS);
+            long tweetsForLastDay = tweet.getCreatedAt().until(LocalDateTime.now(clock), ChronoUnit.HOURS);
             if (tweetsForLastDay <= 24) {
                 userBeInfluencerForLive(tweet);
                 tweets.add(tweet);
@@ -159,7 +161,7 @@ public class Tweetservice {
 
         }
         return tweets.stream()
-                .sorted(Tweetservice::sortByInfluencerThenNetLikes)
+                .sorted(TweetService::sortByInfluencerThenNetLikes)
                 .collect(Collectors.toList());
     }
 
