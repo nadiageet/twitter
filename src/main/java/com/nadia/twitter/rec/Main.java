@@ -1,5 +1,6 @@
 package com.nadia.twitter.rec;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -113,20 +114,21 @@ public class Main {
 
         int[] bestSoFar = new int[pins.size() + 1];
 
+        // base cases
         bestSoFar[pins.size()] = 0;
+        bestSoFar[pins.size() - 1] = Math.max(0, pins.get(pins.size() - 1));
 
-        for (int i = pins.size() - 1; i >= 0; i--) {
+        for (int i = pins.size() - 2; i >= 0; i--) {
             int adding = pins.get(i) + bestSoFar[i + 1];
-
-            int bestLocal;
-            if (i + 2 < bestSoFar.length) {
-                int multipling = (pins.get(i) * pins.get(i + 1)) + bestSoFar[i + 2];
-                bestLocal = Math.max(adding, multipling);
-            } else {
-                bestLocal = adding;
-            }
-
-            bestSoFar[i] = Math.max(bestLocal, bestSoFar[i + 1]);
+            int multiplying = (pins.get(i) * pins.get(i + 1)) + bestSoFar[i + 2];
+            bestSoFar[i] = Collections.max(List.of(
+                    // taking single pin i
+                    adding,
+                    // taking both pin i and i + 1
+                    multiplying,
+                    // not considering pin i
+                    bestSoFar[i + 1])
+            );
         }
 
         return bestSoFar[0];
