@@ -1,23 +1,32 @@
 package com.nadia.twitter.model;
 
 
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
+@Entity
 public class User {
-
-    private UUID uuid = UUID.randomUUID();
+    @Id
+    @GeneratedValue
     private Long id;
     private String userName;
+    @ManyToMany
     private List<User> followed = new ArrayList<>();
+    @ManyToMany
     private List<User> blockedUsers = new ArrayList<>();
+
+    @Column(name = "influencer", nullable = false)
     private boolean isInfluencer = false;
 
 
     public User(Long id, String userName) {
         this.id = id;
         this.userName = userName;
+    }
+
+    public User() {
+
     }
 
     public Long getId() {

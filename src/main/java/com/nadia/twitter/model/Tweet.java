@@ -1,19 +1,35 @@
 package com.nadia.twitter.model;
 
+import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+@Entity
 public class Tweet {
-
+    @Id
+    @GeneratedValue
     private Long id;
     private String content;
+    @ManyToOne(fetch = FetchType.LAZY)
     private User creator;
+
+    @Column(updatable = false)
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
 
+    @Column(name = "private", nullable = false)
     private boolean isPrivate = false;
+
+
+    private boolean isDeleted = false;
+
+    @Transient
+    Set<Long> likesByUserIds = new HashSet<>();
+
+    @Transient
+    Set<Long> dislikesByUserIds = new HashSet<>();
 
 
     public Tweet() {
@@ -49,18 +65,6 @@ public class Tweet {
         return createdAt;
     }
 
-    private boolean isDeleted = false;
-
-    private int likes = 0;
-    private int dislikes = 0;
-
-    Set<Long> likesByUserIds = new HashSet<>();
-    Set<Long> dislikesByUserIds = new HashSet<>();
-
-
-    public void setCreator(User creator) {
-        this.creator = creator;
-    }
 
     public boolean isPrivate() {
         return isPrivate;
