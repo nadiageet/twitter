@@ -6,6 +6,8 @@ import com.nadia.twitter.repository.TweetJPARepository;
 import com.nadia.twitter.repository.TweetRepository;
 import com.nadia.twitter.repository.UserJPARepository;
 import com.nadia.twitter.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
@@ -109,14 +111,8 @@ public class TweetService {
 //                .orElseThrow(() -> new RuntimeException());
     }
 
-    public List<Tweet> getFeed(Long requesterId, Integer page, Integer pageSize) {
-        List<Tweet> tweets = tweetRepository.getAllActivesTweets()
-                .stream()
-                .skip((long) page * pageSize)
-                .limit(pageSize)
-                .collect(Collectors.toList());
-        return tweets;
-
+    public Page<Tweet> getFeed(Long requesterId, Pageable pageable) {
+        return tweetJPARepository.getAllActivesTweets(pageable);
     }
 
 
@@ -160,14 +156,15 @@ public class TweetService {
     }
 
     public void dislikeTweet(Long tweetId, Long requesterId) {
-        Tweet tweet = tweetRepository.getTweetById(tweetId);
-//        tweet.addDisLike(requesterId);
+        Tweet tweet = tweetJPARepository.getReferenceById(tweetId);
+        User user = userJPARepository.getReferenceById(requesterId);
+        tweet.addDisLike(user);
 
     }
 
-    public List<Tweet> getHottestTweets(Long requesterId) {
+    public List<Tweet> getHottestTweets(Long requesterId, Pageable pageable) {
         List<Tweet> tweets = new ArrayList<>();
-        for (Tweet tweet : tweetRepository.getAllActivesTweets()) {
+        for (Tweet tweet : tweetJPARepository.getAllActivesTweets(pageable)) {
             long tweetsForLastDay = tweet.getCreatedAt().until(LocalDateTime.now(clock), ChronoUnit.HOURS);
             if (tweetsForLastDay <= 24) {
                 userBeInfluencerForLive(tweet);

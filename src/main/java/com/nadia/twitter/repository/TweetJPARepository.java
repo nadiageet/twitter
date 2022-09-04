@@ -1,6 +1,8 @@
 package com.nadia.twitter.repository;
 
 import com.nadia.twitter.model.Tweet;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,5 +22,8 @@ public interface TweetJPARepository extends JpaRepository<Tweet, Long> {
             " order by t.createdAt desc"
     )
     List<Tweet> getUserFeed(@Param("userId") Long userId);
+
+    @Query("select t from Tweet t where t.isDeleted=false ")
+    Page<Tweet> getAllActivesTweets(Pageable pageable);
 
 }

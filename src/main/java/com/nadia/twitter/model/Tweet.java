@@ -1,6 +1,7 @@
 package com.nadia.twitter.model;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -10,6 +11,8 @@ public class Tweet {
     @Id
     @GeneratedValue
     private Long id;
+
+    @NotBlank
     private String content;
     @ManyToOne(fetch = FetchType.LAZY)
     private User creator;

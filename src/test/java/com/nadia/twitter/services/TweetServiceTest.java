@@ -12,6 +12,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -118,7 +120,7 @@ class TweetServiceTest {
 
 //            0                   1                   2           3
 //        [x, x, x, x, x || x, x, x, x, x || x, x, x, x, x || x, x, x, x, x, x, x, x, x, ]
-        List<Tweet> tweets = tweetservice.getFeed(NADIA_ID, 1, 5);
+        Page<Tweet> tweets = tweetservice.getFeed(NADIA_ID, PageRequest.of(1, 5));
         System.out.println("tweets = " + tweets);
         assertThat(tweets)
                 .hasSize(5);
@@ -341,7 +343,7 @@ class TweetServiceTest {
         tweetservice.dislikeTweet(2L, GUIGUI_ID);
 
 
-        List<Tweet> tweets = tweetservice.getHottestTweets(3L);
+        List<Tweet> tweets = tweetservice.getHottestTweets(3L, PageRequest.of(0, 100));
         assertThat(tweets)
                 .hasSize(20)
                 .first().isEqualTo(tweetRepository.getTweetById(1L));
@@ -386,7 +388,7 @@ class TweetServiceTest {
 
         User toto = new User(42L, "toto");
 
-        List<Tweet> feed = tweetservice.getHottestTweets(toto.getId());
+        List<Tweet> feed = tweetservice.getHottestTweets(toto.getId(), PageRequest.of(0, 100));
         assertThat(feed).hasSize(5);
         assertThat(feed).containsExactly(
                 tweetSofia, tweetNadia, tweetGuigui2, tweetGuigui1, tweetGuigui3

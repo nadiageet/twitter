@@ -1,10 +1,14 @@
 package com.nadia.twitter.controller.request;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
 public class CreateTweetRequest {
 
-
+    @NotBlank
     private String content;
 
+    @NotNull
     private Long requesterId;
 
     private Boolean isPrivate = false;
