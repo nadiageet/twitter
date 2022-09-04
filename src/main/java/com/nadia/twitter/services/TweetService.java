@@ -60,7 +60,7 @@ public class TweetService {
     }
 
     public List<Tweet> getTweetsOfUser(Long userId) {
-        return tweetJPARepository.getTweetsSortedByDateOFCreation(userId);
+        return tweetJPARepository.getTweetsByUserIdSortedByDateOFCreation(userId);
     }
 
     public void follow(Long creatorId, Long followerId) {
@@ -71,25 +71,37 @@ public class TweetService {
     }
 
     public void blockfollow(Long requester, Long useToBlockId) {
-        User creator = userRepository.getUserById(requester);
-        User userBlocked = userRepository.getUserById(useToBlockId);
+        User creator = userJPARepository.getReferenceById(requester);
+        User userBlocked = userJPARepository.getReferenceById(useToBlockId);
         creator.blockFollow(userBlocked);
     }
 
     public List<Tweet> getUserFeed(Long requesterId) {
 //        Map<Long, List<Tweet>> tweetsMap = new HashMap<>();
 
-        User user = userRepository.getUserById(requesterId);
-        List<Long> followrsId = user.getFollowed().stream()
-                .map(user1 -> user1.getId()).toList();
+        return tweetJPARepository.getUserFeed(requesterId);
+//        User user = userJPARepository.getReferenceById(requesterId);
+//        List<Long> followrsId = user.getFollowed().stream()
+//                .map(User::getId)
+//                .toList();
+//
+//        return tweetJPARepository.getTweetsByUserIds(followrsId);
 //
 //        for(Long id : followrsId){
 //            tweetsMap.put(id, getTweetsOfUser(id));
 //        }
+//        return followrsId.stream()
+//                 [1, 2, 3] ids
+//                .map(tweetJPARepository::getTweetsByUserIdSortedByDateOFCreation)
+//                 [[12, 13] , [3], []]
+//                .flatMap(List::stream)
+//                 [12, 13 , 3]
+//                .toList();
 
-        return tweetRepository.getTweetsSortedByDateOFCreation().stream()
-                .filter(tweet -> followrsId.contains(tweet.getCreator().getId()))
-                .collect(Collectors.toList());
+
+//        return tweetJPARepository.getTweetsByUserIdSortedByDateOFCreation().stream()
+//                .filter(tweet -> followrsId.contains(tweet.getCreator().getId()))
+//                .collect(Collectors.toList());
 //        return tweetsMap.entrySet().stream()
 //                .sorted(Map.Entry.comparingByKey())
 //                .map(entry -> entry.getValue())
@@ -110,28 +122,27 @@ public class TweetService {
 
     public void updateTweet(Long tweetId, String tweetContent) {
 
-        Tweet tweet = tweetRepository.getTweetById(tweetId);
+        Tweet tweet = tweetJPARepository.getReferenceById(tweetId);
         long hoursFromCreation = tweet.getCreatedAt().until(LocalDateTime.now(clock), ChronoUnit.HOURS);
         if (hoursFromCreation >= 1) {
             throw new IllegalArgumentException("the tweet can not be codified");
         }
         tweet.setContent(tweetContent);
         tweet.setUpdatedAt(LocalDateTime.now(clock));
-
-
     }
 
     public void deleteTweet(Long tweetId, Long requesterId) {
         Tweet tweet = tweetJPARepository.getReferenceById(tweetId);
-        if (!(tweet.getCreator().equals(userRepository.getUserById(requesterId)))) {
+        if (!(tweet.getCreator().getId().equals(requesterId))) {
             throw new IllegalArgumentException("the tweet can not be deleted");
         }
         tweet.setDeleted(true);
     }
 
     public void likeTweet(Long tweetId, Long requesterId) {
-        Tweet tweet = tweetRepository.getTweetById(tweetId);
-//        tweet.addLike(requesterId);
+        Tweet tweet = tweetJPARepository.getReferenceById(tweetId);
+        User user = userJPARepository.getReferenceById(requesterId);
+        tweet.addLike(user);
         if (!tweet.getCreator().isInfluencer()) {
             userBeInfluencerForLive(tweet);
         }

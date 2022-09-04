@@ -2,9 +2,7 @@ package com.nadia.twitter.model;
 
 
 import javax.persistence.*;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -17,7 +15,7 @@ public class User {
     @ManyToMany
     private Set<User> followed = new HashSet<>();
     @ManyToMany
-    private List<User> blockedUsers = new ArrayList<>();
+    private Set<User> blockedUsers = new HashSet<>();
 
     @Column(name = "influencer", nullable = false)
     private boolean isInfluencer = false;
@@ -44,7 +42,7 @@ public class User {
         return followed;
     }
 
-    public List<User> getBlockedUsers() {
+    public Set<User> getBlockedUsers() {
         return blockedUsers;
     }
 

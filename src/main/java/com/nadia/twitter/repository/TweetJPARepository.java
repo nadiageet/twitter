@@ -9,6 +9,16 @@ import java.util.List;
 
 public interface TweetJPARepository extends JpaRepository<Tweet, Long> {
     @Query("select t from Tweet t where t.creator.id = :userId order by t.createdAt desc ")
-    List<Tweet> getTweetsSortedByDateOFCreation(
-            @Param("userId") Long userId);
+    List<Tweet> getTweetsByUserIdSortedByDateOFCreation(@Param("userId") Long userId);
+
+    @Query("select t from Tweet t where t.creator.id in (:userIds) order by t.createdAt desc")
+    List<Tweet> getTweetsByUserIds(@Param("userIds") List<Long> userIds);
+
+    @Query(
+            "select t from Tweet t where t.creator.id in " +
+            "(select f.id from User u join u.followed f where u.id=:userId) " +
+            " order by t.createdAt desc"
+    )
+    List<Tweet> getUserFeed(@Param("userId") Long userId);
+
 }

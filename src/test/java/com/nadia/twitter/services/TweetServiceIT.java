@@ -88,4 +88,103 @@ public class TweetServiceIT {
 
 
     }
+
+    @Test
+    void blockfollow() {
+
+        // GIVEN
+        User creator = new User();
+        creator.setUserName("nadia");
+        User userBlocked = new User();
+        userBlocked.setUserName("guigui");
+
+        userJPARepository.save(creator);
+        userJPARepository.save(userBlocked);
+        // WHEN
+        tweetService.blockfollow(creator.getId(), userBlocked.getId());
+        // THEN
+        assertThat(creator.getBlockedUsers()).containsOnlyOnce(userBlocked);
+
+    }
+
+    @Test
+    void getTweetForFollowUser() {
+
+        // GIVEN
+        User nadia = new User();
+        nadia.setUserName("nadia");
+
+        User guigui = new User();
+        guigui.setUserName("guigui");
+
+        User sofia = new User();
+        sofia.setUserName("sofia");
+
+        userJPARepository.save(nadia);
+        userJPARepository.save(guigui);
+        userJPARepository.save(sofia);
+        tweetService.follow(nadia.getId(), guigui.getId());
+        tweetService.follow(sofia.getId(), guigui.getId());
+
+        tweetService.tweet("tweet nadia", nadia.getId());
+        tweetService.tweet("tweet sofia", sofia.getId());
+        tweetService.tweet("tweet nadia 1", nadia.getId());
+        tweetService.tweet("tweet nadia 2", nadia.getId());
+
+        // WHEN
+        List<Tweet> userFeed = tweetService.getUserFeed(guigui.getId());
+
+        //THEN
+        assertThat(userFeed).hasSize(4);
+
+
+    }
+
+    @Test
+    void updateTweet() {
+        // GIVEN
+        User nadia = new User();
+        nadia.setUserName("nadia");
+        userJPARepository.save(nadia);
+
+        Tweet tweetNadia = tweetService.tweet("tweet nadia", nadia.getId());
+
+        // WHEN
+        tweetService.updateTweet(tweetNadia.getId(), "toujours pour moi");
+
+        //THEN
+        assertThat(tweetNadia.getContent()).isEqualTo("toujours pour moi");
+
+    }
+
+    @Test
+    void deleteTweet() {
+        // GIVEN
+        User nadia = new User();
+        nadia.setUserName("nadia");
+        userJPARepository.save(nadia);
+
+        Tweet tweetNadia1 = tweetService.tweet("tweet nadia deux", nadia.getId());
+        // WHEN
+        tweetService.deleteTweet(tweetNadia1.getId(), nadia.getId());
+
+        //THEN
+        assertThat(tweetNadia1.isDeleted()).isTrue();
+    }
+
+    @Test
+    void likeTweet() {
+
+        // GIVEN
+        User nadia = new User();
+        nadia.setUserName("nadia");
+        userJPARepository.save(nadia);
+        Tweet tweetNadia1 = tweetService.tweet("tweet nadia deux", nadia.getId());
+
+        // WHEN
+        tweetService.likeTweet(tweetNadia1.getId(), nadia.getId());
+
+        //THEN
+        assertThat(tweetNadia1.getLikes()).isEqualTo(1);
+    }
 }
