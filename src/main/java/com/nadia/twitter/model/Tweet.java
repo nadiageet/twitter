@@ -24,12 +24,11 @@ public class Tweet {
 
 
     private boolean isDeleted = false;
+    @ManyToMany
+    Set<User> likesByUsers = new HashSet<>();
 
-    @Transient
-    Set<Long> likesByUserIds = new HashSet<>();
-
-    @Transient
-    Set<Long> dislikesByUserIds = new HashSet<>();
+    @ManyToMany
+    Set<User> dislikesByUsers = new HashSet<>();
 
 
     public Tweet() {
@@ -95,24 +94,24 @@ public class Tweet {
     }
 
     public int getLikes() {
-        return likesByUserIds.size();
+        return likesByUsers.size();
     }
 
     public int getDislikes() {
-        return dislikesByUserIds.size();
+        return dislikesByUsers.size();
     }
 
-    public void addLike(Long userId) {
-        likesByUserIds.add(userId);
+    public void addLike(User user) {
+        likesByUsers.add(user);
     }
 
-    public void addDisLike(Long userId) {
-        dislikesByUserIds.add(userId);
+    public void addDisLike(User user) {
+        dislikesByUsers.add(user);
     }
 
 
     public int getNetLikes() {
-        return likesByUserIds.size() - dislikesByUserIds.size();
+        return likesByUsers.size() - dislikesByUsers.size();
     }
 
     @Override

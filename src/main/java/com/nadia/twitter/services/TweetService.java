@@ -128,7 +128,7 @@ public class TweetService {
 
     public void likeTweet(Long tweetId, Long requesterId) {
         Tweet tweet = tweetRepository.getTweetById(tweetId);
-        tweet.addLike(requesterId);
+//        tweet.addLike(requesterId);
         if (!tweet.getCreator().isInfluencer()) {
             userBeInfluencerForLive(tweet);
         }
@@ -147,7 +147,8 @@ public class TweetService {
 
     public void dislikeTweet(Long tweetId, Long requesterId) {
         Tweet tweet = tweetRepository.getTweetById(tweetId);
-        tweet.addDisLike(requesterId);
+//        tweet.addDisLike(requesterId);
+
     }
 
     public List<Tweet> getHottestTweets(Long requesterId) {

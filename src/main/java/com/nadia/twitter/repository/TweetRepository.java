@@ -53,8 +53,8 @@ public class TweetRepository {
 
     public Tweet getTweetByLike(Long tweetId, Long userLikeId, Long userDisLikeId) {
         Tweet tweet = getTweetById(tweetId);
-        tweet.addLike(userLikeId);
-        tweet.addDisLike(userDisLikeId);
+//        tweet.addLike(userLikeId);
+//        tweet.addDisLike(userDisLikeId);
         return tweet;
     }
 
