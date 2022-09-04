@@ -2,7 +2,9 @@ package com.nadia.twitter.services;
 
 import com.nadia.twitter.model.Tweet;
 import com.nadia.twitter.model.User;
+import com.nadia.twitter.repository.TweetJPARepository;
 import com.nadia.twitter.repository.TweetRepository;
+import com.nadia.twitter.repository.UserJPARepository;
 import com.nadia.twitter.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -19,11 +21,17 @@ public class TweetService {
     private final TweetRepository tweetRepository;
     private final UserRepository userRepository;
 
+    private final TweetJPARepository tweetJPARepository;
+
+    private final UserJPARepository userJPARepository;
+
     private final Clock clock;
 
-    public TweetService(TweetRepository tweetRepository, UserRepository userRepository, Clock clock) {
+    public TweetService(TweetRepository tweetRepository, UserRepository userRepository, TweetJPARepository tweetJPARepository, UserJPARepository userJPARepository, Clock clock) {
         this.tweetRepository = tweetRepository;
         this.userRepository = userRepository;
+        this.tweetJPARepository = tweetJPARepository;
+        this.userJPARepository = userJPARepository;
         this.clock = clock;
     }
 
@@ -38,8 +46,8 @@ public class TweetService {
     }
 
     public Tweet tweet(String content, Long creatorId) {
-        Tweet tweet = new Tweet(content, userRepository.getUserById(creatorId), LocalDateTime.now(clock));
-        tweetRepository.save(tweet);
+        Tweet tweet = new Tweet(content, userJPARepository.getReferenceById(creatorId), LocalDateTime.now(clock));
+        tweetJPARepository.save(tweet);
         return tweet;
     }
 
@@ -52,17 +60,12 @@ public class TweetService {
     }
 
     public List<Tweet> getTweetsOfUser(Long userId) {
-
-        return tweetRepository.getTweetsSortedByDateOFCreation()
-                .stream()
-                .filter(tweet -> tweet.getCreator().getId().equals(userId))
-                .collect(Collectors.toList());
-
+        return tweetJPARepository.getTweetsSortedByDateOFCreation(userId);
     }
 
     public void follow(Long creatorId, Long followerId) {
-        User creator = userRepository.getUserById(creatorId);
-        User follower = userRepository.getUserById(followerId);
+        User creator = userJPARepository.getReferenceById(creatorId);
+        User follower = userJPARepository.getReferenceById(followerId);
 
         follower.follow(creator);
     }
@@ -119,7 +122,7 @@ public class TweetService {
     }
 
     public void deleteTweet(Long tweetId, Long requesterId) {
-        Tweet tweet = tweetRepository.getTweetById(tweetId);
+        Tweet tweet = tweetJPARepository.getReferenceById(tweetId);
         if (!(tweet.getCreator().equals(userRepository.getUserById(requesterId)))) {
             throw new IllegalArgumentException("the tweet can not be deleted");
         }

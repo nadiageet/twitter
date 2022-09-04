@@ -2,11 +2,16 @@ package com.nadia.twitter.services;
 
 import com.nadia.twitter.model.Tweet;
 import com.nadia.twitter.model.User;
+import com.nadia.twitter.repository.TweetJPARepository;
 import com.nadia.twitter.repository.TweetRepository;
+import com.nadia.twitter.repository.UserJPARepository;
 import com.nadia.twitter.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -19,6 +24,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 
+@ExtendWith(MockitoExtension.class)
 class TweetServiceTest {
     public static final long NADIA_ID = 1L;
     public static final long GUIGUI_ID = 2L;
@@ -26,8 +32,14 @@ class TweetServiceTest {
     UserRepository userRepository = new UserRepository();
     TweetRepository tweetRepository = new TweetRepository(userRepository);
 
+    @Mock
+    TweetJPARepository tweetJPARepository;
+
+    @Mock
+    UserJPARepository userJPARepository;
+
     Clock clock = Clock.fixed(Instant.parse("2022-08-01T14:41:00Z"), ZoneId.of("Europe/Paris"));
-    TweetService tweetservice = new TweetService(tweetRepository, userRepository, clock);
+    TweetService tweetservice = new TweetService(tweetRepository, userRepository, tweetJPARepository, userJPARepository, clock);
     private User soso;
     private User nadia;
     private User guigui;
