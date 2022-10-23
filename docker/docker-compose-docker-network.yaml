@@ -20,7 +20,7 @@ services:
   application:
     #  image et le tag: la version par defaut c'est lat
     #  docker images
-    image: twitter:0.0.1-SNAPSHOT
+    image: twitter:0.0.1
     container_name: twitter-app
     environment:
       SPRING_PROFILES_ACTIVE: "docker"

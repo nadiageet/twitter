@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.nadia</groupId>
     <artifactId>twitter</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
     <name>twitter</name>
     <description>twitter</description>
     <properties>
