@@ -1,4 +1,4 @@
-version: '3.1'
+version: '3.5'
 
 services:
   #  database:
@@ -17,12 +17,25 @@ services:
   #    ports:
   #      - "8080:8080"
 
+  application:
+    image: twitter:0.0.1-SNAPSHOT
+    container_name: twitter-app
+    environment:
+      SPRING_ACTIVE_PROFILES: "docker"
+    ports:
+      - "3000:8080"
+    networks:
+      - default
+
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: 'rabbitmq'
     ports:
       - "5672:5672"
       - "15672:15672"
+    networks:
+      - default
+
 
   database:
     image: mysql:5.7
@@ -37,3 +50,10 @@ services:
       MYSQL_ROOT_PASSWORD: 'password'
     ports:
       - '3307:3306'
+    networks:
+      - default
+
+
+networks:
+  default:
+    name: my-pre-existing-network
