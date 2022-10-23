@@ -17,7 +17,7 @@ public class GlobalConfiguration {
 
     @Scheduled(fixedRate = 1_000L)
     public void test() {
-        log.info("test called...");
+        // log.info("test called...");
     }
 
     @Bean

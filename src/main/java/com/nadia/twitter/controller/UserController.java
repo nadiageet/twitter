@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nadia.twitter.controller.request.CreateUserRequest;
+import com.nadia.twitter.controller.response.UserResponse;
 import com.nadia.twitter.feign.RandomUserClient;
 import com.nadia.twitter.model.User;
 import com.nadia.twitter.repository.UserJPARepository;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Clock;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -39,8 +41,10 @@ public class UserController {
 
 
     @GetMapping("/users")
-    public List<User> getAll() {
-        return userRepository.findAll();
+    public List<UserResponse> getAll() {
+        return userRepository.findAll()
+                .stream().map(UserResponse::new)
+                .collect(Collectors.toList());
     }
 
     @PostMapping("/users")

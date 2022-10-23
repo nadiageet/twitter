@@ -1,0 +1,61 @@
+version: '3.5'
+
+services:
+  #  database:
+  #    container_name: twitter_database
+  #    image: postgres
+  #    restart: always
+  #    ports:
+  #      - "5432:5432"
+  #    environment:
+  #      POSTGRES_DB: twitter_db
+  #      POSTGRES_PASSWORD: local_password
+
+  #  adminer:
+  #    image: adminer
+  #    restart: always
+  #    ports:
+  #      - "8080:8080"
+
+  application:
+    #  image et le tag: la version par defaut c'est lat
+    #  docker images
+    image: twitter:0.0.1-SNAPSHOT
+    container_name: twitter-app
+    environment:
+      SPRING_PROFILES_ACTIVE: "docker"
+    ports:
+      - "3000:8080"
+    networks:
+      - default
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: 'rabbitmq'
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - default
+
+
+  database:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'db'
+      # So you don't have to use root, but you can if you like
+      MYSQL_USER: 'user'
+      # You can use whatever password you like
+      MYSQL_PASSWORD: 'password'
+      # Password for root access
+      MYSQL_ROOT_PASSWORD: 'password'
+    ports:
+      - '3307:3306'
+    networks:
+      - default
+
+
+networks:
+  default:
+    name: my-pre-existing-network
