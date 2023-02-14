@@ -1,0 +1,66 @@
+{
+  "results": [
+    {
+      "gender": "male",
+      "name": {
+        "title": "Mr",
+        "first": "Jawad",
+        "last": "Pruijn"
+      },
+      "location": {
+        "street": {
+          "number": 8791,
+          "name": "Burg Mobersstraat"
+        },
+        "city": "Rijperkerk",
+        "state": "Friesland",
+        "country": "Netherlands",
+        "postcode": "0958 PO",
+        "coordinates": {
+          "latitude": "31.4440",
+          "longitude": "-88.7909"
+        },
+        "timezone": {
+          "offset": "-11:00",
+          "description": "Midway Island, Samoa"
+        }
+      },
+      "email": "jawad.pruijn@example.com",
+      "login": {
+        "uuid": "680e3b35-d5dc-487f-a492-d0c36b6697a9",
+        "username": "purpledog875",
+        "password": "delta",
+        "salt": "Yt3WFE0P",
+        "md5": "92ee915a051f167716f358ac611a4790",
+        "sha1": "bb4f8f4bd18654bb273716f2b2374a387eba4cd1",
+        "sha256": "07febbc5c69a9e1f915ac5a2b818856dc04ed3ab0a35aa14d980acb5267fd47d"
+      },
+      "dob": {
+        "date": "1944-11-28T02:52:08.646Z",
+        "age": 77
+      },
+      "registered": {
+        "date": "2018-02-08T14:55:13.972Z",
+        "age": 4
+      },
+      "phone": "(047) 4464669",
+      "cell": "(06) 78808033",
+      "id": {
+        "name": "BSN",
+        "value": "72991275"
+      },
+      "picture": {
+        "large": "https://randomuser.me/api/portraits/men/18.jpg",
+        "medium": "https://randomuser.me/api/portraits/med/men/18.jpg",
+        "thumbnail": "https://randomuser.me/api/portraits/thumb/men/18.jpg"
+      },
+      "nat": "NL"
+    }
+  ],
+  "info": {
+    "seed": "abe4292911e25316",
+    "results": 1,
+    "page": 1,
+    "version": "1.4"
+  }
+}
