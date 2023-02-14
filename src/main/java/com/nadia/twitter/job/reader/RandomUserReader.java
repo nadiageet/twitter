@@ -9,7 +9,7 @@ import org.springframework.batch.item.ItemReader;
 @RequiredArgsConstructor
 public class RandomUserReader implements ItemReader<RandomUser.Root> {
 
-    private static int count = 0;
+    private int count = 0;
     private final RandomUserClient randomUserClient;
 
     @Override
